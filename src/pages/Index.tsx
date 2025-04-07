@@ -33,7 +33,7 @@ const Index = () => {
   };
 
   return (
-    <SidebarProvider defaultCollapsed={false}>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen bg-muted/40">
         <Sidebar className="border-r">
           <SidebarHeader className="flex items-center justify-between px-4">
