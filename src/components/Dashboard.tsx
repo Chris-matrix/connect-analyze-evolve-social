@@ -1,9 +1,10 @@
 
 import React from 'react';
+import InterestGalaxy from './InterestGalaxy';
+import MoodFilter from './MoodFilter';
+import TimeWellSpent from './TimeWellSpent';
+import ContextualDiscussions from './ContextualDiscussions';
 import AnalyticsCard from './AnalyticsCard';
-import EngagementMetrics from './EngagementMetrics';
-import ProfileManagement from './ProfileManagement';
-import PostScheduler from './PostScheduler';
 import { Users, ThumbsUp, MessageSquare, Share2 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -40,12 +41,16 @@ const Dashboard: React.FC = () => {
       </div>
       
       <div className="grid grid-cols-12 gap-6">
-        <EngagementMetrics />
-        <ProfileManagement />
+        <InterestGalaxy />
+      </div>
+
+      <div className="grid grid-cols-12 gap-6">
+        <TimeWellSpent />
+        <MoodFilter />
       </div>
       
       <div className="grid grid-cols-12 gap-6">
-        <PostScheduler />
+        <ContextualDiscussions />
       </div>
     </div>
   );
