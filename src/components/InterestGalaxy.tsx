@@ -62,7 +62,7 @@ const InterestGalaxy = () => {
   }, [rotating]);
 
   return (
-    <Card className="col-span-12 lg:col-span-6 overflow-hidden border-gradient">
+    <Card className="overflow-hidden border-gradient">
       <CardHeader className="bg-gradient-to-r from-social-blue/5 to-social-purple/5 pb-4">
         <div className="flex justify-between items-center">
           <CardTitle>Interest Galaxies</CardTitle>
@@ -80,18 +80,18 @@ const InterestGalaxy = () => {
       </CardHeader>
       <CardContent className="p-0 relative">
         <div className="absolute inset-0 bg-gradient-to-br from-social-blue/5 via-transparent to-social-purple/5 rounded-b-lg" />
-        <div className="galaxy-container relative h-[350px] w-full">
+        <div className="galaxy-container relative h-[300px] w-full">
           {containerSize.width > 0 && interests.map((interest, index) => {
             const baseAngle = index * (2 * Math.PI / interests.length);
             const angle = baseAngle + rotation;
             
             const centerX = containerSize.width / 2;
-            const centerY = 350 / 2;
+            const centerY = 300 / 2;
             
             const x = centerX + Math.cos(angle) * radius;
             const y = centerY + Math.sin(angle) * radius;
             
-            const scaleFactor = Math.min(containerSize.width, 350) / 800;
+            const scaleFactor = Math.min(containerSize.width, 300) / 800;
             const nodeSize = interest.size * Math.max(0.7, scaleFactor);
             
             // Generate a unique gradient for each node
@@ -144,7 +144,7 @@ const InterestGalaxy = () => {
               className="absolute transform z-0"
               style={{
                 left: `${containerSize.width/2 - 25}px`,
-                top: `${350/2 - 25}px`,
+                top: `${300/2 - 25}px`,
               }}
             >
               <div className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-social-blue to-social-purple opacity-20 animate-pulse" />
@@ -161,7 +161,7 @@ const InterestGalaxy = () => {
               const angle = baseAngle + rotation;
               
               const centerX = containerSize.width / 2;
-              const centerY = 350 / 2;
+              const centerY = 300 / 2;
               
               const x = centerX + Math.cos(angle) * radius;
               const y = centerY + Math.sin(angle) * radius;

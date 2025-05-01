@@ -40,14 +40,15 @@ const Dashboard: React.FC = () => {
         />
       </div>
       
-      <div className="grid grid-cols-12 gap-6">
-        <InterestGalaxy />
-        <TimeWellSpent />
-      </div>
-
-      <div className="grid grid-cols-12 gap-6">
-        <MoodFilter />
-        <ContextualDiscussions />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <TimeWellSpent />
+          <ContextualDiscussions />
+        </div>
+        <div className="space-y-6">
+          <InterestGalaxy />
+          <MoodFilter />
+        </div>
       </div>
     </div>
   );
