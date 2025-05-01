@@ -42,14 +42,11 @@ const Dashboard: React.FC = () => {
       
       <div className="grid grid-cols-12 gap-6">
         <InterestGalaxy />
+        <TimeWellSpent />
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        <TimeWellSpent />
         <MoodFilter />
-      </div>
-      
-      <div className="grid grid-cols-12 gap-6">
         <ContextualDiscussions />
       </div>
     </div>
