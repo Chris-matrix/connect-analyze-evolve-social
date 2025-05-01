@@ -106,4 +106,15 @@
   .analytics-label {
     @apply text-sm text-muted-foreground;
   }
+  
+  .border-gradient {
+    @apply border border-transparent;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+    background-image: linear-gradient(to right, white, white), linear-gradient(135deg, rgba(67, 97, 238, 0.3), rgba(114, 9, 183, 0.3));
+  }
+  
+  .dark .border-gradient {
+    background-image: linear-gradient(to right, hsl(224 30% 12%), hsl(224 30% 12%)), linear-gradient(135deg, rgba(67, 97, 238, 0.3), rgba(114, 9, 183, 0.3));
+  }
 }
