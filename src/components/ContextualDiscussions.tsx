@@ -3,8 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { ContentSuggestion } from '@/types/content';
 
-const discussions = [
+// Default discussions if no suggestions are provided
+const defaultDiscussions = [
   {
     id: 1,
     topic: 'Future of AI Ethics',
@@ -31,7 +33,20 @@ const discussions = [
   },
 ];
 
-const ContextualDiscussions = () => {
+interface ContextualDiscussionsProps {
+  suggestions?: ContentSuggestion[];
+}
+
+const ContextualDiscussions: React.FC<ContextualDiscussionsProps> = ({ suggestions }) => {
+  // Map content suggestions to discussion format if available
+  const discussions = suggestions ? suggestions.slice(0, 3).map((suggestion, index) => ({
+    id: index + 1,
+    topic: suggestion.title,
+    participants: Math.floor(Math.random() * 150) + 50,
+    messages: Math.floor(Math.random() * 500) + 200,
+    categories: suggestion.tags || ['Content', 'Social Media'],
+    activity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)]
+  })) : defaultDiscussions;
   return (
     <Card className="col-span-12">
       <CardHeader>
