@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SocialProfile } from '@/lib/mock-data/mock-api';
+import { SocialProfile } from '@/types/socialProfile';
 
 const API_URL = 'http://localhost:5000/api';
 

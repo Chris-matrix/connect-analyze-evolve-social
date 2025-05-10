@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { SocialProfile } from '@/lib/mock-data/mock-api';
+import { SocialProfile } from '@/types/socialProfile';
 import * as socialProfilesApi from '@/lib/api/socialProfilesApi';
 import { useAuth } from '@/lib/auth/use-auth';
 
