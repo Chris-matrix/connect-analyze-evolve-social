@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '@/lib/auth/auth-context';
+import { useAuth } from '@/lib/auth/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
   redirectPath?: string;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requiredRoles = ['user', 'admin'],
   redirectPath = '/login'
@@ -56,4 +56,4 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   return <>{children ? children : <Outlet />}</>;
 };
 
-export default ProtectedRoute;
+// Export is now handled as a named export above

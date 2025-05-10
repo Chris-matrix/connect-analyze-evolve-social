@@ -139,26 +139,26 @@ const FollowerGrowthChart: React.FC<FollowerGrowthChartProps> = ({
         </div>
         
         {isLoading ? (
-          <div className="h-80 flex items-center justify-center">
+          <div className="h-[500px] flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : error ? (
-          <div className="h-80 flex items-center justify-center">
+          <div className="h-[500px] flex items-center justify-center">
             <div className="text-center text-red-500">
               <p>Failed to load follower data</p>
               <p className="text-sm">{error}</p>
             </div>
           </div>
         ) : !hasData ? (
-          <div className="h-80 flex items-center justify-center">
+          <div className="h-[500px] flex items-center justify-center">
             <div className="text-center text-muted-foreground">
               <p>No follower data available</p>
               <p className="text-sm">Connect your social accounts to track follower growth</p>
             </div>
           </div>
         ) : (
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[500px] md:h-[550px] lg:h-[600px]">
+            <ResponsiveContainer width="100%" height="100%" className="mt-4">
               <LineChart data={filteredData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 

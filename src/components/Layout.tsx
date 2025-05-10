@@ -35,12 +35,12 @@ const Layout = () => {
 
   // Define menu items with their paths
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-    { icon: Calendar, label: 'Content Calendar', path: '/calendar' },
-    { icon: Instagram, label: 'Social Profiles', path: '/profiles' },
-    { icon: MessageSquare, label: 'Engagement', path: '/engagement' },
-    { icon: Users, label: 'Audience', path: '/audience' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: BarChart3, label: 'Analytics', path: '/dashboard/analytics' },
+    { icon: Calendar, label: 'Content Calendar', path: '/dashboard/calendar' },
+    { icon: Instagram, label: 'Social Profiles', path: '/dashboard/profiles' },
+    { icon: MessageSquare, label: 'Engagement', path: '/dashboard/engagement' },
+    { icon: Users, label: 'Audience', path: '/dashboard/audience' },
   ];
 
   return (
@@ -76,9 +76,9 @@ const Layout = () => {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild 
-                  className={location.pathname === "/settings" ? "nav-item active" : "nav-item"}
+                  className={location.pathname === "/dashboard/settings" ? "nav-item active" : "nav-item"}
                 >
-                  <Link to="/settings">
+                  <Link to="/dashboard/settings">
                     <Settings className="h-4 w-4" />
                     <span>Settings</span>
                   </Link>

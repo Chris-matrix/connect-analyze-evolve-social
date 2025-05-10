@@ -1,6 +1,6 @@
 import React from 'react';
 import UserProfile from '@/components/auth/UserProfile';
-import { useAuth } from '@/lib/auth/auth-context';
+import { useAuth } from '@/lib/auth/use-auth';
 import { Navigate } from 'react-router-dom';
 
 const Profile: React.FC = () => {

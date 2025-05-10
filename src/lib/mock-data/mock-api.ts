@@ -1,6 +1,17 @@
 import * as mockDataGenerator from './generator';
 import { ContentSuggestion, SocialMetrics, User } from '@/types/content';
 
+// Define SocialProfile interface
+export interface SocialProfile {
+  id: string;
+  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+  username: string;
+  profileUrl: string;
+  connected: boolean;
+  followers: number;
+  lastUpdated: string;
+}
+
 // Cache for mock data to ensure consistency across the app
 const mockDataCache: {
   dashboard?: ReturnType<typeof mockDataGenerator.generateDashboardData>;
@@ -11,6 +22,7 @@ const mockDataCache: {
   calendarData?: Array<Record<string, unknown>>;
   user?: User;
   platforms?: SocialMetrics[];
+  socialProfiles?: SocialProfile[];
   allData?: ReturnType<typeof mockDataGenerator.getAllMockData>;
 } = {};
 
@@ -32,6 +44,39 @@ export const initializeMockData = () => {
     mockDataCache.calendarData = mockDataCache.allData.calendarData;
     mockDataCache.user = mockDataCache.allData.user;
     mockDataCache.platforms = mockDataCache.allData.platforms;
+    
+    // Initialize social profiles from localStorage or with default data
+    try {
+      const storedProfiles = localStorage.getItem('socialProfiles');
+      if (storedProfiles) {
+        mockDataCache.socialProfiles = JSON.parse(storedProfiles);
+      } else {
+        mockDataCache.socialProfiles = [
+          {
+            id: '1',
+            platform: 'instagram',
+            username: 'socialconnect',
+            profileUrl: 'https://instagram.com/socialconnect',
+            connected: true,
+            followers: 1250,
+            lastUpdated: new Date().toISOString()
+          },
+          {
+            id: '2',
+            platform: 'twitter',
+            username: 'socialconnect',
+            profileUrl: 'https://twitter.com/socialconnect',
+            connected: true,
+            followers: 850,
+            lastUpdated: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+      }
+    } catch (error) {
+      console.error('Error initializing social profiles:', error);
+      mockDataCache.socialProfiles = [];
+    }
   }
   return mockDataCache;
 };
@@ -248,6 +293,90 @@ export const register = async (name: string, email: string, password: string) =>
 
 export const logout = async () => {
   await simulateApiDelay();
+  return { success: true };
+};
+
+// Social profile management functions
+export const getSocialProfiles = async () => {
+  await simulateApiDelay();
+  if (!mockDataCache.socialProfiles) {
+    initializeMockData();
+  }
+  return mockDataCache.socialProfiles;
+};
+
+export const addSocialProfile = async (profile: Omit<SocialProfile, 'id'>) => {
+  await simulateApiDelay();
+  if (!mockDataCache.socialProfiles) {
+    initializeMockData();
+  }
+  
+  const newProfile = {
+    ...profile,
+    id: Date.now().toString(),
+  };
+  
+  mockDataCache.socialProfiles!.push(newProfile);
+  
+  // Persist to localStorage
+  try {
+    localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+  } catch (error) {
+    console.error('Error saving social profiles to localStorage:', error);
+  }
+  
+  return newProfile;
+};
+
+export const updateSocialProfile = async (id: string, data: Partial<SocialProfile>) => {
+  await simulateApiDelay();
+  if (!mockDataCache.socialProfiles) {
+    initializeMockData();
+  }
+  
+  const index = mockDataCache.socialProfiles!.findIndex(profile => profile.id === id);
+  if (index === -1) {
+    throw new Error('Social profile not found');
+  }
+  
+  const updatedProfile = {
+    ...mockDataCache.socialProfiles![index],
+    ...data,
+    lastUpdated: new Date().toISOString()
+  };
+  
+  mockDataCache.socialProfiles![index] = updatedProfile;
+  
+  // Persist to localStorage
+  try {
+    localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+  } catch (error) {
+    console.error('Error saving social profiles to localStorage:', error);
+  }
+  
+  return updatedProfile;
+};
+
+export const deleteSocialProfile = async (id: string) => {
+  await simulateApiDelay();
+  if (!mockDataCache.socialProfiles) {
+    initializeMockData();
+  }
+  
+  const index = mockDataCache.socialProfiles!.findIndex(profile => profile.id === id);
+  if (index === -1) {
+    throw new Error('Social profile not found');
+  }
+  
+  mockDataCache.socialProfiles!.splice(index, 1);
+  
+  // Persist to localStorage
+  try {
+    localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+  } catch (error) {
+    console.error('Error saving social profiles to localStorage:', error);
+  }
+  
   return { success: true };
 };
 

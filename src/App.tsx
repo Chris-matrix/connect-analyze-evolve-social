@@ -3,9 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./lib/auth/auth-context";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Layout from "./components/Layout";
 import Dashboard from "./components/Dashboard";
 import Analytics from "./pages/Analytics";
@@ -20,6 +20,7 @@ import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import LoadingPage from "./pages/LoadingPage";
 
 const queryClient = new QueryClient();
 
@@ -31,13 +32,19 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Initial Loading Route */}
+            <Route path="/loading" element={<LoadingPage />} />
+            
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
+            {/* Redirect root to loading page */}
+            <Route path="/" element={<Navigate to="/loading" replace />} />
+            
             {/* Protected Routes with shared Layout */}
-            <Route path="/" element={<Layout />}>
+            <Route path="/dashboard" element={<Layout />}>
               {/* Basic User Access */}
               <Route index element={<ProtectedRoute requiredRoles={['user', 'admin']}><Dashboard /></ProtectedRoute>} />
               <Route path="analytics" element={<ProtectedRoute requiredRoles={['user', 'admin']}><Analytics /></ProtectedRoute>} />

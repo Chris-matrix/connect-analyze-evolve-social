@@ -34,6 +34,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/social-me
 const User = require('./models/User');
 const SocialMetrics = require('./models/SocialMetrics');
 const ContentSuggestion = require('./models/ContentSuggestion');
+const SocialProfile = require('./models/SocialProfile');
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -296,6 +297,89 @@ app.put('/api/content/suggestions/:id/status', authenticate, async (req, res) =>
 
 // API Routes
 app.use('/api/ai', aiRoutes);
+
+// Social Profile Routes
+app.get('/api/social-profiles', authenticate, async (req, res) => {
+  try {
+    const profiles = await SocialProfile.find({ userId: req.user._id });
+    res.json(profiles);
+  } catch (error) {
+    console.error('Error fetching social profiles:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/social-profiles', authenticate, async (req, res) => {
+  try {
+    const { platform, username, profileUrl, connected } = req.body;
+    
+    const newProfile = new SocialProfile({
+      userId: req.user._id,
+      platform,
+      username,
+      profileUrl,
+      connected,
+      followers: 0,
+      lastUpdated: new Date()
+    });
+    
+    await newProfile.save();
+    res.status(201).json(newProfile);
+  } catch (error) {
+    console.error('Error creating social profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.put('/api/social-profiles/:id', authenticate, async (req, res) => {
+  try {
+    const { platform, username, profileUrl, connected } = req.body;
+    
+    // Find profile and ensure it belongs to the user
+    const profile = await SocialProfile.findOne({ 
+      _id: req.params.id,
+      userId: req.user._id 
+    });
+    
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+    
+    // Update profile
+    profile.platform = platform || profile.platform;
+    profile.username = username || profile.username;
+    profile.profileUrl = profileUrl || profile.profileUrl;
+    profile.connected = connected !== undefined ? connected : profile.connected;
+    profile.lastUpdated = new Date();
+    
+    await profile.save();
+    res.json(profile);
+  } catch (error) {
+    console.error('Error updating social profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.delete('/api/social-profiles/:id', authenticate, async (req, res) => {
+  try {
+    // Find profile and ensure it belongs to the user
+    const profile = await SocialProfile.findOne({ 
+      _id: req.params.id,
+      userId: req.user._id 
+    });
+    
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+    
+    await SocialProfile.deleteOne({ _id: req.params.id });
+    res.json({ message: 'Profile deleted successfully' });
+  }
+  catch (error) {
+    console.error('Error deleting social profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

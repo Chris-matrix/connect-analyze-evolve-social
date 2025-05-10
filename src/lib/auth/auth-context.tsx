@@ -1,9 +1,10 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+// auth-context.tsx - Context definition file
+import React, { useState, useEffect, createContext } from 'react';
 import * as mockApi from '@/lib/mock-data/mock-api';
 import { User } from '@/types/content';
 
-// Define the AuthContext type directly in this file
-interface AuthContextType {
+// Define the AuthContext type
+export interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
@@ -71,20 +72,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkUserLoggedIn();
   }, []);
 
+  // Login method
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
-    
     try {
       const result = await mockApi.login(email, password);
-      setUser(result.user);
+      if (!result || !result.user) {
+        throw new Error('Authentication failed');
+      }
       
-      // Store user in localStorage for persistence
-      localStorage.setItem('socialDashboardUser', JSON.stringify(result.user));
-      localStorage.setItem('socialDashboardToken', result.token);
+      // Store user data safely
+      try {
+        localStorage.setItem('socialDashboardUser', JSON.stringify(result.user));
+        localStorage.setItem('socialDashboardToken', result.token || 'mock-jwt-token');
+      } catch (storageError) {
+        console.error('Error storing auth data in localStorage:', storageError);
+        // Continue with the session even if local storage fails
+      }
+      
+      // Set user state correctly
+      setUser(result.user);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred during login';
-      setError(errorMessage);
+      console.error('Login error:', error);
+      setError('Invalid email or password. Please try again.');
       throw error;
     } finally {
       setLoading(false);
@@ -97,11 +108,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       const result = await mockApi.register(name, email, password);
-      setUser(result.user);
       
-      // Store user in localStorage for persistence
-      localStorage.setItem('socialDashboardUser', JSON.stringify(result.user));
-      localStorage.setItem('socialDashboardToken', result.token);
+      // Store user data safely
+      try {
+        localStorage.setItem('socialDashboardUser', JSON.stringify(result.user));
+        localStorage.setItem('socialDashboardToken', result.token);
+      } catch (storageError) {
+        console.error('Error storing auth data in localStorage:', storageError);
+        // Continue with the session even if local storage fails
+      }
+      
+      // Set user state with just the user object
+      setUser(result.user);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred during registration';
       setError(errorMessage);
@@ -111,21 +129,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Logout method
   const logout = async () => {
     setLoading(true);
-    
+    setError(null);
     try {
       await mockApi.logout();
-      
-      // Clear user from localStorage
-      localStorage.removeItem('socialDashboardUser');
-      localStorage.removeItem('socialDashboardToken');
-      
       setUser(null);
+      
+      // Clear storage safely
+      try {
+        localStorage.removeItem('socialDashboardUser');
+        localStorage.removeItem('socialDashboardToken');
+      } catch (storageError) {
+        console.error('Error clearing auth data from localStorage:', storageError);
+        // Continue with logout even if local storage operations fail
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred during logout';
-      setError(errorMessage);
-      throw error;
+      console.error('Logout error:', error);
+      // Don't set error for logout - just log it
+      // We still want to clear the local state even if the API call fails
+      setUser(null);
+      try {
+        localStorage.removeItem('socialDashboardUser');
+        localStorage.removeItem('socialDashboardToken');
+      } catch (storageError) {
+        console.error('Error clearing auth data from localStorage:', storageError);
+      }
     } finally {
       setLoading(false);
     }
@@ -196,11 +226,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Define the useAuth hook directly in this file
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+// Export is already handled with the component declaration

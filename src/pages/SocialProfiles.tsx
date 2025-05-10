@@ -10,19 +10,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import * as mockApi from '@/lib/mock-data/mock-api';
-
-interface SocialProfile {
-  id: string;
-  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
-  username: string;
-  profileUrl: string;
-  connected: boolean;
-  followers: number;
-  lastUpdated: string;
-}
+import { SocialProfile } from '@/lib/mock-data/mock-api';
+import * as socialProfilesApi from '@/lib/api/socialProfilesApi';
+import { useAuth } from '@/lib/auth/use-auth';
 
 const SocialProfiles = () => {
+  const { user } = useAuth();
   const [profiles, setProfiles] = useState<SocialProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,28 +32,11 @@ const SocialProfiles = () => {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        // Mock API call - in a real app, this would fetch from your backend
-        const data = await Promise.resolve([
-          {
-            id: '1',
-            platform: 'instagram',
-            username: 'socialconnect',
-            profileUrl: 'https://instagram.com/socialconnect',
-            connected: true,
-            followers: 1250,
-            lastUpdated: new Date().toISOString()
-          },
-          {
-            id: '2',
-            platform: 'twitter',
-            username: 'socialconnect',
-            profileUrl: 'https://twitter.com/socialconnect',
-            connected: true,
-            followers: 850,
-            lastUpdated: new Date().toISOString()
-          }
-        ]);
-        setProfiles(data as SocialProfile[]);
+        // Only fetch profiles if user is logged in
+        if (user) {
+          const data = await socialProfilesApi.getSocialProfiles();
+          setProfiles(data || []);
+        }
       } catch (err) {
         console.error('Error fetching profiles:', err);
         setError('Failed to load social profiles');
@@ -70,45 +46,69 @@ const SocialProfiles = () => {
     };
     
     fetchProfiles();
-  }, []);
+  }, [user]);  // Re-fetch when user changes
   
-  const handleAddProfile = () => {
-    const newProfile: SocialProfile = {
-      id: Date.now().toString(),
-      platform: formPlatform,
-      username: formUsername,
-      profileUrl: formProfileUrl,
-      connected: formConnected,
-      followers: 0,
-      lastUpdated: new Date().toISOString()
-    };
-    
-    setProfiles([...profiles, newProfile]);
-    resetForm();
-    setIsAddDialogOpen(false);
-  };
-  
-  const handleEditProfile = () => {
-    if (!currentProfile) return;
-    
-    const updatedProfiles = profiles.map(profile => 
-      profile.id === currentProfile.id ? {
-        ...profile,
+  const handleAddProfile = async () => {
+    try {
+      setLoading(true);
+      const newProfile = await socialProfilesApi.addSocialProfile({
         platform: formPlatform,
         username: formUsername,
         profileUrl: formProfileUrl,
         connected: formConnected,
+        followers: 0,
         lastUpdated: new Date().toISOString()
-      } : profile
-    );
-    
-    setProfiles(updatedProfiles);
-    resetForm();
-    setIsEditDialogOpen(false);
+      });
+      
+      setProfiles([...profiles, newProfile]);
+      resetForm();
+      setIsAddDialogOpen(false);
+    } catch (err) {
+      console.error('Error adding profile:', err);
+      setError('Failed to add social profile');
+    } finally {
+      setLoading(false);
+    }
   };
   
-  const handleDeleteProfile = (id: string) => {
-    setProfiles(profiles.filter(profile => profile.id !== id));
+  const handleEditProfile = async () => {
+    if (!currentProfile) return;
+    
+    try {
+      setLoading(true);
+      const updatedProfile = await socialProfilesApi.updateSocialProfile(currentProfile.id, {
+        platform: formPlatform,
+        username: formUsername,
+        profileUrl: formProfileUrl,
+        connected: formConnected
+      });
+      
+      const updatedProfiles = profiles.map(profile => 
+        profile.id === currentProfile.id ? updatedProfile : profile
+      );
+      
+      setProfiles(updatedProfiles);
+      resetForm();
+      setIsEditDialogOpen(false);
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError('Failed to update social profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleDeleteProfile = async (id: string) => {
+    try {
+      setLoading(true);
+      await socialProfilesApi.deleteSocialProfile(id);
+      setProfiles(profiles.filter(profile => profile.id !== id));
+    } catch (err) {
+      console.error('Error deleting profile:', err);
+      setError('Failed to delete social profile');
+    } finally {
+      setLoading(false);
+    }
   };
   
   const openEditDialog = (profile: SocialProfile) => {

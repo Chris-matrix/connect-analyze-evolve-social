@@ -1,21 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Loader2 } from 'lucide-react';
+import { BarChart3, Loader2, Filter, Instagram, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as mockApi from '@/lib/mock-data/mock-api';
 import { AnalyticsData } from '@/types/dashboard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [filteredData, setFilteredData] = useState<AnalyticsData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Filtering states
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [selectedMetric, setSelectedMetric] = useState<string>("all");
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
         const data = await mockApi.getAnalyticsData();
         setAnalyticsData(data);
+        setFilteredData(data); // Initialize filtered data with all data
       } catch (error) {
         console.error('Error fetching analytics data:', error);
         setError('Failed to load analytics data');
@@ -26,6 +39,91 @@ const Analytics = () => {
 
     fetchAnalyticsData();
   }, []);
+  
+  // Apply filters when filter values change
+  useEffect(() => {
+    if (!analyticsData) return;
+    
+    const filtered = { ...analyticsData };
+    
+    // Filter by platform
+    if (selectedPlatform !== "all") {
+      // Filter impressions data by platform
+      filtered.impressions = analyticsData.impressions.map(item => ({
+        date: item.date,
+        [selectedPlatform]: item[selectedPlatform as keyof typeof item],
+      }));
+      
+      // Filter engagement data by platform
+      filtered.engagement = analyticsData.engagement.map(item => ({
+        date: item.date,
+        [selectedPlatform]: item[selectedPlatform as keyof typeof item],
+      }));
+      
+      // Filter reach data
+      filtered.reach = analyticsData.reach.map(item => ({
+        date: item.date,
+        [selectedPlatform]: item[selectedPlatform as keyof typeof item],
+      }));
+      
+      // Filter platform performance data
+      filtered.platformPerformance = analyticsData.platformPerformance.filter(item => 
+        item.platform.toLowerCase() === selectedPlatform.toLowerCase()
+      );
+    }
+    
+    // Filter by date range
+    if (dateRange.from && dateRange.to) {
+      const fromDate = dateRange.from;
+      const toDate = dateRange.to;
+      
+      // Filter impressions data by date
+      filtered.impressions = filtered.impressions.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= fromDate && itemDate <= toDate;
+      });
+      
+      // Filter engagement data by date
+      filtered.engagement = filtered.engagement.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= fromDate && itemDate <= toDate;
+      });
+      
+      // Filter reach data by date
+      filtered.reach = filtered.reach.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= fromDate && itemDate <= toDate;
+      });
+    }
+    
+    setFilteredData(filtered);
+  }, [analyticsData, selectedPlatform, dateRange]);
+  
+  // Reset filters
+  const resetFilters = () => {
+    setSelectedPlatform("all");
+    setDateRange({ from: undefined, to: undefined });
+    setSelectedMetric("all");
+    if (analyticsData) {
+      setFilteredData(analyticsData);
+    }
+  };
+
+  // Get platform icon
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'instagram':
+        return <Instagram className="h-4 w-4" />;
+      case 'twitter':
+        return <Twitter className="h-4 w-4" />;
+      case 'facebook':
+        return <Facebook className="h-4 w-4" />;
+      case 'linkedin':
+        return <Linkedin className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
 
   if (loading) {
     return (
@@ -53,8 +151,99 @@ const Analytics = () => {
   const { platformPerformance, engagementData, audienceGrowth } = analyticsData;
 
   return (
-    <div className="space-y-6 p-6">
-      <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+        
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Platform Filter */}
+          <Select
+            value={selectedPlatform}
+            onValueChange={setSelectedPlatform}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Platform" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Platforms</SelectItem>
+              <SelectItem value="instagram">
+                <div className="flex items-center gap-2">
+                  <Instagram className="h-4 w-4 text-pink-600" />
+                  Instagram
+                </div>
+              </SelectItem>
+              <SelectItem value="twitter">
+                <div className="flex items-center gap-2">
+                  <Twitter className="h-4 w-4 text-blue-400" />
+                  Twitter
+                </div>
+              </SelectItem>
+              <SelectItem value="facebook">
+                <div className="flex items-center gap-2">
+                  <Facebook className="h-4 w-4 text-blue-600" />
+                  Facebook
+                </div>
+              </SelectItem>
+              <SelectItem value="linkedin">
+                <div className="flex items-center gap-2">
+                  <Linkedin className="h-4 w-4 text-blue-700" />
+                  LinkedIn
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {/* Date Range Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <span className="hidden sm:inline">Date Range</span>
+                {dateRange.from ? (
+                  dateRange.to ? (
+                    <span>
+                      {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d, yyyy")}
+                    </span>
+                  ) : (
+                    format(dateRange.from, "MMM d, yyyy")
+                  )
+                ) : (
+                  <span>Select dates</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                selected={{
+                  from: dateRange.from,
+                  to: dateRange.to,
+                }}
+                onSelect={(range) => {
+                  setDateRange({
+                    from: range?.from,
+                    to: range?.to,
+                  });
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          
+          {/* Reset Filters Button */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              setSelectedPlatform("all");
+              setDateRange({ from: undefined, to: undefined });
+              setSelectedMetric("all");
+            }}
+            className="ml-auto md:ml-0"
+          >
+            Reset Filters
+          </Button>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -97,9 +286,14 @@ const Analytics = () => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="likes" fill="#8884d8" />
-                  <Bar dataKey="comments" fill="#82ca9d" />
-                  <Bar dataKey="shares" fill="#ffc658" />
+                  {(selectedPlatform === "all" || selectedPlatform === "instagram") && 
+                    <Bar dataKey="instagram" fill="#E1306C" name="Instagram" />}
+                  {(selectedPlatform === "all" || selectedPlatform === "twitter") && 
+                    <Bar dataKey="twitter" fill="#1DA1F2" name="Twitter" />}
+                  {(selectedPlatform === "all" || selectedPlatform === "facebook") && 
+                    <Bar dataKey="facebook" fill="#4267B2" name="Facebook" />}
+                  {(selectedPlatform === "all" || selectedPlatform === "linkedin") && 
+                    <Bar dataKey="linkedin" fill="#0077B5" name="LinkedIn" />}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -114,7 +308,7 @@ const Analytics = () => {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={audienceGrowth}
+                  data={filteredData?.audienceGrowth}
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -122,10 +316,14 @@ const Analytics = () => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="instagram" fill="#E1306C" />
-                  <Bar dataKey="twitter" fill="#1DA1F2" />
-                  <Bar dataKey="facebook" fill="#4267B2" />
-                  <Bar dataKey="linkedin" fill="#0077B5" />
+                  {(selectedPlatform === "all" || selectedPlatform === "instagram") && 
+                    <Bar dataKey="instagram" fill="#E1306C" name="Instagram" />}
+                  {(selectedPlatform === "all" || selectedPlatform === "twitter") && 
+                    <Bar dataKey="twitter" fill="#1DA1F2" name="Twitter" />}
+                  {(selectedPlatform === "all" || selectedPlatform === "facebook") && 
+                    <Bar dataKey="facebook" fill="#4267B2" name="Facebook" />}
+                  {(selectedPlatform === "all" || selectedPlatform === "linkedin") && 
+                    <Bar dataKey="linkedin" fill="#0077B5" name="LinkedIn" />}
                 </BarChart>
               </ResponsiveContainer>
             </div>
