@@ -48,28 +48,28 @@ const Analytics = () => {
     
     // Filter by platform
     if (selectedPlatform !== "all") {
-      // Filter impressions data by platform
-      filtered.impressions = analyticsData.impressions.map(item => ({
-        date: item.date,
-        [selectedPlatform]: item[selectedPlatform as keyof typeof item],
-      }));
-      
-      // Filter engagement data by platform
-      filtered.engagement = analyticsData.engagement.map(item => ({
-        date: item.date,
-        [selectedPlatform]: item[selectedPlatform as keyof typeof item],
-      }));
-      
-      // Filter reach data
-      filtered.reach = analyticsData.reach.map(item => ({
-        date: item.date,
-        [selectedPlatform]: item[selectedPlatform as keyof typeof item],
-      }));
-      
       // Filter platform performance data
       filtered.platformPerformance = analyticsData.platformPerformance.filter(item => 
         item.platform.toLowerCase() === selectedPlatform.toLowerCase()
       );
+      
+      // Filter engagement data by platform
+      filtered.engagementData = analyticsData.engagementData.filter(item => 
+        // Only keep data points that have engagement for the selected platform
+        item[selectedPlatform as keyof typeof item] !== undefined
+      );
+      
+      // Filter audience growth data - maintain the structure but zero out non-selected platforms
+      filtered.audienceGrowth = analyticsData.audienceGrowth.map(item => {
+        // Create a new object with all platforms set to 0 except the selected one
+        return {
+          month: item.month,
+          instagram: selectedPlatform === 'instagram' ? item.instagram : 0,
+          twitter: selectedPlatform === 'twitter' ? item.twitter : 0,
+          facebook: selectedPlatform === 'facebook' ? item.facebook : 0,
+          linkedin: selectedPlatform === 'linkedin' ? item.linkedin : 0
+        };
+      });
     }
     
     // Filter by date range
@@ -77,22 +77,23 @@ const Analytics = () => {
       const fromDate = dateRange.from;
       const toDate = dateRange.to;
       
-      // Filter impressions data by date
-      filtered.impressions = filtered.impressions.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= fromDate && itemDate <= toDate;
-      });
-      
       // Filter engagement data by date
-      filtered.engagement = filtered.engagement.filter(item => {
+      filtered.engagementData = filtered.engagementData.filter(item => {
         const itemDate = new Date(item.date);
         return itemDate >= fromDate && itemDate <= toDate;
       });
       
-      // Filter reach data by date
-      filtered.reach = filtered.reach.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= fromDate && itemDate <= toDate;
+      // Filter audience growth data by month
+      // This is an approximation since audienceGrowth uses month strings
+      filtered.audienceGrowth = filtered.audienceGrowth.filter(item => {
+        // Parse month string like "Jan 2023"
+        const [monthStr, yearStr] = item.month.split(' ');
+        const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(monthStr);
+        if (monthIndex === -1) return true; // Keep if we can't parse
+        
+        const itemDate = new Date(parseInt(yearStr), monthIndex);
+        return itemDate >= new Date(fromDate.getFullYear(), fromDate.getMonth()) && 
+               itemDate <= new Date(toDate.getFullYear(), toDate.getMonth());
       });
     }
     
@@ -148,7 +149,8 @@ const Analytics = () => {
     );
   }
 
-  const { platformPerformance, engagementData, audienceGrowth } = analyticsData;
+  // Get data from filteredData if available, otherwise use analyticsData
+  const { platformPerformance = [], engagementData = [], audienceGrowth = [] } = filteredData || analyticsData || {};
 
   return (
     <div className="container mx-auto p-4 space-y-6">
