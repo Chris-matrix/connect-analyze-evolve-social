@@ -1,38 +1,147 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/social-media-dashboard';
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+/**
+ * Configuration for MongoDB connection
+ */
+interface MongoDBConfig {
+  uri: string;
+  dbName: string;
+  options: mongoose.ConnectOptions;
 }
 
 /**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
+ * Cache connection to prevent multiple connections during development
+ * This works in both browser and server environments
  */
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
-async function connectDB() {
+/**
+ * Global cache interface for storing mongoose connection
+ */
+interface GlobalCache {
+  mongoose?: MongooseCache;
+}
+
+// In Vite, environment variables are exposed on import.meta.env instead of process.env
+// and must be prefixed with VITE_ to be exposed to the client
+const MONGODB_URI = import.meta.env.VITE_MONGODB_URI || 'mongodb://localhost:27017/?appName=MongoDB+Compass&directConnection=true&serverSelectionTimeoutMS=2000';
+const DB_NAME = import.meta.env.VITE_DB_NAME || 'social-dashboard';
+
+// MongoDB connection configuration
+const config: MongoDBConfig = {
+  uri: MONGODB_URI,
+  dbName: DB_NAME,
+  options: {
+    dbName: DB_NAME,
+    bufferCommands: false,
+    autoIndex: true,
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4 // Use IPv4, skip trying IPv6
+  }
+};
+
+if (!config.uri) {
+  console.warn('MongoDB URI not defined, using default connection string');
+}
+
+// Log the database we're connecting to
+console.log(`MongoDB connecting to database: ${config.dbName}`);
+
+// Create a connection cache in the appropriate global object
+const getGlobalCache = (): GlobalCache => {
+  if (typeof window !== 'undefined') {
+    // Browser environment
+    return window as unknown as GlobalCache;
+  } else if (typeof global !== 'undefined') {
+    // Node.js environment
+    return global as unknown as GlobalCache;
+  } else {
+    // Fallback for other environments
+    return {};
+  }
+};
+
+const globalCache = getGlobalCache();
+
+// Initialize cache if it doesn't exist
+if (!globalCache.mongoose) {
+  globalCache.mongoose = { conn: null, promise: null };
+}
+
+const cached = globalCache.mongoose;
+
+/**
+ * Connect to MongoDB database
+ * @returns Promise that resolves to mongoose instance
+ */
+async function connectDB(): Promise<typeof mongoose> {
+  // Return existing connection if available
   if (cached.conn) {
     return cached.conn;
   }
 
+  // Create new connection if none exists
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    // Check if mongoose.connect is a function (it might not be in browser environments)
+    if (typeof mongoose.connect === 'function') {
+      cached.promise = mongoose.connect(config.uri, config.options)
+        .then((mongoose) => {
+          console.log('✅ MongoDB connected successfully');
+          return mongoose;
+        })
+        .catch((err) => {
+          console.error('❌ MongoDB connection error:', err);
+          throw err;
+        });
+    } else {
+      // In browser environments, we can't directly connect to MongoDB
+      // Instead, we'll use our API endpoints
+      console.warn('⚠️ Direct MongoDB connection not available in browser. Using API endpoints instead.');
+      cached.promise = Promise.resolve(mongoose);
+    }
   }
-  cached.conn = await cached.promise;
-  return cached.conn;
+  
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if database is connected
+ * @returns Boolean indicating connection status
+ */
+export function isDatabaseConnected(): boolean {
+  return cached.conn !== null && mongoose.connection.readyState === 1;
+}
+
+/**
+ * Get connection status details
+ * @returns Object with connection status information
+ */
+export function getConnectionStatus(): {
+  connected: boolean;
+  readyState: number;
+  status: string;
+  dbName: string | null;
+} {
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const readyState = mongoose.connection.readyState || 0;
+  
+  return {
+    connected: readyState === 1,
+    readyState,
+    status: states[readyState] || 'unknown',
+    dbName: mongoose.connection.name || null
+  };
 }
 
 export default connectDB;

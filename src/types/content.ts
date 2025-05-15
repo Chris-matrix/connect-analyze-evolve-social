@@ -1,15 +1,19 @@
 export interface ContentSuggestion {
   id?: string;
-  userId?: string;
-  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'all';
+  userId: string;
+  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'tiktok' | 'all';
   title: string;
   content: string;
-  mediaType: 'image' | 'video' | 'carousel' | 'text';
-  suggestedTags: string[];
+  mediaType?: 'image' | 'video' | 'carousel' | 'text';
+  suggestedTags?: string[];
   tags?: string[];
-  bestTimeToPost: Date | string;
-  aiGeneratedScore: number;
+  bestTimeToPost?: Date | string;
+  aiGeneratedScore?: number;
+  aiGenerated?: boolean;
   status: 'pending' | 'approved' | 'rejected' | 'published';
+  imagePrompt?: string;
+  scheduledDate?: Date | string;
+  metadata?: Record<string, string> | Map<string, string>;
   engagement?: {
     likes: number;
     comments: number;
@@ -22,9 +26,21 @@ export interface ContentSuggestion {
 
 export interface SocialMetrics {
   id?: string;
-  userId?: string;
-  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
-  metrics: {
+  userId: string;
+  profileId?: string;
+  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'tiktok';
+  date?: Date | string;
+  followers: number;
+  following?: number;
+  posts?: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  impressions?: number;
+  reach?: number;
+  engagement?: number;
+  engagementRate?: number;
+  metrics?: {
     followers: number;
     following?: number;
     posts: number;
@@ -35,16 +51,16 @@ export interface SocialMetrics {
     reach: number;
     engagement: number;
   };
-  dailyStats: {
+  dailyStats?: {
     date: Date | string;
     followers: number;
     engagement: number;
     impressions: number;
     reach: number;
   }[];
-  platformAccountId: string;
-  platformUsername: string;
-  lastUpdated: Date | string;
+  platformAccountId?: string;
+  platformUsername?: string;
+  lastUpdated?: Date | string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 }

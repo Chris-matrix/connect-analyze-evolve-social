@@ -1,11 +1,23 @@
-const { OpenAI } = require('openai');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai = null;
+
+// Check if OpenAI API key is available
+if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'sk-your-openai-api-key') {
+  try {
+    const { OpenAI } = require('openai');
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    console.log('✅ OpenAI API initialized successfully');
+  } catch (error) {
+    console.warn('⚠️ OpenAI API initialization failed:', error.message);
+  }
+} else {
+  console.warn('⚠️ OpenAI API key not configured. AI features will be disabled.');
+}
 
 /**
  * Generate content suggestions based on user parameters
@@ -201,9 +213,18 @@ async function getContentImprovement(content, platform) {
   }
 }
 
+/**
+ * Check if OpenAI is initialized
+ * @returns {boolean} True if OpenAI is initialized, false otherwise
+ */
+function isInitialized() {
+  return openai !== null;
+}
+
 module.exports = {
   generateContentSuggestion,
   analyzeContentSentiment,
   getBestPostingTimes,
   getContentImprovement,
+  isInitialized
 };

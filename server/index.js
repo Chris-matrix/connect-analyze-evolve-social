@@ -1,11 +1,11 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const path = require('path');
+const { connectDatabase } = require('./config/database');
 
 // Load environment variables
 dotenv.config();
@@ -24,11 +24,12 @@ app.use(cors({
 
 // Import routes
 const aiRoutes = require('./routes/ai');
+const dbStatusRoutes = require('./routes/db-status');
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/social-media-dashboard')
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Connect to MongoDB using our database configuration module
+connectDatabase()
+  .then(() => console.log('Server connected to MongoDB'))
+  .catch(err => console.error('Server failed to connect to MongoDB:', err));
 
 // Import models
 const User = require('./models/User');
@@ -297,6 +298,7 @@ app.put('/api/content/suggestions/:id/status', authenticate, async (req, res) =>
 
 // API Routes
 app.use('/api/ai', aiRoutes);
+app.use('/api/db-status', dbStatusRoutes);
 
 // Social Profile Routes
 app.get('/api/social-profiles', authenticate, async (req, res) => {

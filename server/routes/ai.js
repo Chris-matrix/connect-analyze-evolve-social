@@ -39,6 +39,14 @@ router.post('/generate-content', authenticate, async (req, res) => {
       return res.status(400).json({ message: 'Platform and topic are required' });
     }
     
+    // Check if OpenAI is initialized
+    if (!openaiService.isInitialized()) {
+      return res.status(503).json({ 
+        message: 'AI service is not available. Please configure your OpenAI API key.',
+        error: 'OPENAI_NOT_CONFIGURED'
+      });
+    }
+    
     const contentSuggestion = await openaiService.generateContentSuggestion(params);
     
     res.json(contentSuggestion);

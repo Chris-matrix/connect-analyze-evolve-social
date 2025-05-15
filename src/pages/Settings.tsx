@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Globe, Lock, Moon, Sun, User } from 'lucide-react';
+import { Bell, Globe, Lock, Moon, Sun, User, Database } from 'lucide-react';
+import DataStorageSettings from '@/components/settings/DataStorageSettings';
 
 const Settings = () => {
   const { user } = useAuth();
@@ -34,7 +34,7 @@ const Settings = () => {
       </div>
       
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-5 mb-8">
           <TabsTrigger value="account">
             <User className="h-4 w-4 mr-2" />
             Account
@@ -50,6 +50,10 @@ const Settings = () => {
           <TabsTrigger value="language">
             <Globe className="h-4 w-4 mr-2" />
             Language
+          </TabsTrigger>
+          <TabsTrigger value="storage">
+            <Database className="h-4 w-4 mr-2" />
+            Data Storage
           </TabsTrigger>
         </TabsList>
         
@@ -246,9 +250,9 @@ const Settings = () => {
         <TabsContent value="language" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Language Settings</CardTitle>
+              <CardTitle>Language Preferences</CardTitle>
               <CardDescription>
-                Choose your preferred language
+                Choose your preferred language for the application
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -303,6 +307,10 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="storage" className="space-y-4">
+          <DataStorageSettings />
         </TabsContent>
       </Tabs>
     </div>
