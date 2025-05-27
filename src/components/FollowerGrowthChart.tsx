@@ -40,7 +40,7 @@ const FollowerGrowthChart: React.FC<FollowerGrowthChartProps> = ({
 
   const filterDataByTimeRange = (data: FollowerGrowthData[]) => {
     const now = new Date();
-    let cutoffDate = new Date();
+    const cutoffDate = new Date();
     
     switch (timeRange) {
       case '7d':
@@ -172,7 +172,7 @@ const FollowerGrowthChart: React.FC<FollowerGrowthChartProps> = ({
                 <Tooltip 
                   formatter={(value, name) => [
                     `${Number(value).toLocaleString()} followers`, 
-                    name.charAt(0).toUpperCase() + name.slice(1)
+                    typeof name === 'string' ? name.charAt(0).toUpperCase() + name.slice(1) : String(name)
                   ]}
                   labelFormatter={(label) => new Date(label).toLocaleDateString()}
                 />

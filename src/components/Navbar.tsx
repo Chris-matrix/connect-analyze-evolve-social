@@ -71,7 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link to="/settings">Settings</Link>
+              <Link to="/dashboard/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link to="/help">Help</Link>
@@ -98,10 +98,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/profile">Profile</Link>
+              <Link to="/dashboard/profile">Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings">Settings</Link>
+              <Link to="/dashboard/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>

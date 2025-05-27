@@ -1,0 +1,42 @@
+{
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
+    "id": 90472,
+    "files": [
+      "static/chunks/472.2c08b965bd9148e2.js"
+    ]
+  },
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_error": {
+    "id": 99341,
+    "files": [
+      "static/chunks/9341.a5e04b1003bfe050.js"
+    ]
+  },
+  "components\\settings\\DataStorageSettings.tsx -> @/lib/db/mongodb": {
+    "id": 1617,
+    "files": []
+  },
+  "lib\\db\\models\\index.ts -> ./ContentSuggestion": {
+    "id": 45737,
+    "files": [
+      "static/chunks/5737.a433653ffbc67469.js"
+    ]
+  },
+  "lib\\db\\models\\index.ts -> ./SocialMetrics": {
+    "id": 1636,
+    "files": [
+      "static/chunks/1636.a699f8b9bb5d56a5.js"
+    ]
+  },
+  "lib\\db\\models\\index.ts -> ./SocialProfile": {
+    "id": 41884,
+    "files": [
+      "static/chunks/1884.63668e06d2715bae.js"
+    ]
+  },
+  "lib\\db\\models\\index.ts -> ./User": {
+    "id": 93539,
+    "files": [
+      "static/chunks/3539.43216faae4b188d0.js"
+    ]
+  }
+}

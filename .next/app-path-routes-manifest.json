@@ -1,0 +1,7 @@
+{
+  "/api/content/suggestions/route": "/api/content/suggestions",
+  "/api/auth/register/route": "/api/auth/register",
+  "/_not-found/page": "/_not-found",
+  "/page": "/",
+  "/(dashboard)/page": "/"
+}
