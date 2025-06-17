@@ -24,7 +24,7 @@ const SocialProfiles = () => {
   const [currentProfile, setCurrentProfile] = useState<SocialProfile | null>(null);
   
   // Form state
-  const [formPlatform, setFormPlatform] = useState<'instagram' | 'twitter' | 'facebook' | 'linkedin'>('instagram');
+  const [formPlatform, setFormPlatform] = useState<SocialProfile['platform']>('instagram');
   const [formUsername, setFormUsername] = useState('');
   const [formProfileUrl, setFormProfileUrl] = useState('');
   const [formConnected, setFormConnected] = useState(true);
@@ -52,6 +52,7 @@ const SocialProfiles = () => {
     try {
       setLoading(true);
       const newProfile = await socialProfilesApi.addSocialProfile({
+        userId: user?.id || '', // Make sure user ID is provided
         platform: formPlatform,
         username: formUsername,
         profileUrl: formProfileUrl,
@@ -128,7 +129,7 @@ const SocialProfiles = () => {
     setCurrentProfile(null);
   };
   
-  const getPlatformIcon = (platform: string) => {
+  const getPlatformIcon = (platform: SocialProfile['platform']) => {
     switch (platform) {
       case 'instagram':
         return <Instagram className="h-6 w-6 text-pink-500" />;

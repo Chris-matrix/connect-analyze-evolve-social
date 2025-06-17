@@ -24,10 +24,12 @@ class SocialProfileService extends DatabaseService<SocialProfileDocument> {
       return profiles.map(profile => ({
         id: profile._id.toString(),
         userId: profile.userId.toString(),
-        platform: profile.platform,
+        platform: profile.platform as SocialProfile['platform'],
         username: profile.username,
-        profileUrl: profile.profileUrl,
-        isConnected: profile.isConnected,
+        profileUrl: profile.profileUrl || '',
+        connected: profile.isConnected,
+        followers: 0, // Default value since it's not in the document
+        lastUpdated: profile.updatedAt.toISOString(),
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt
       }));
@@ -43,7 +45,7 @@ class SocialProfileService extends DatabaseService<SocialProfileDocument> {
    * @param platform - Social media platform
    * @returns The social profile or null if not found
    */
-  async getUserPlatformProfile(userId: string, platform: string): Promise<SocialProfile | null> {
+  async getUserPlatformProfile(userId: string, platform: SocialProfile['platform']): Promise<SocialProfile | null> {
     try {
       const profile = await this.findOne({ userId, platform });
       if (!profile) return null;
@@ -51,10 +53,12 @@ class SocialProfileService extends DatabaseService<SocialProfileDocument> {
       return {
         id: profile._id.toString(),
         userId: profile.userId.toString(),
-        platform: profile.platform,
+        platform: profile.platform as SocialProfile['platform'],
         username: profile.username,
-        profileUrl: profile.profileUrl,
-        isConnected: profile.isConnected,
+        profileUrl: profile.profileUrl || '',
+        connected: profile.isConnected,
+        followers: 0, // Default value since it's not in the document
+        lastUpdated: profile.updatedAt.toISOString(),
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt
       };
@@ -73,16 +77,20 @@ class SocialProfileService extends DatabaseService<SocialProfileDocument> {
     try {
       const newProfile = await this.create({
         ...profile,
-        userId: new mongoose.Types.ObjectId(profile.userId)
+        userId: new mongoose.Types.ObjectId(profile.userId),
+        isConnected: profile.connected,
+        platform: profile.platform
       });
       
       return {
         id: newProfile._id.toString(),
         userId: newProfile.userId.toString(),
-        platform: newProfile.platform,
+        platform: newProfile.platform as SocialProfile['platform'],
         username: newProfile.username,
-        profileUrl: newProfile.profileUrl,
-        isConnected: newProfile.isConnected,
+        profileUrl: newProfile.profileUrl || '',
+        connected: newProfile.isConnected,
+        followers: 0, // Default value since it's not in the document
+        lastUpdated: newProfile.updatedAt.toISOString(),
         createdAt: newProfile.createdAt,
         updatedAt: newProfile.updatedAt
       };
@@ -98,18 +106,27 @@ class SocialProfileService extends DatabaseService<SocialProfileDocument> {
    * @param data - Updated profile data
    * @returns The updated social profile
    */
-  async updateProfile(id: string, data: Partial<SocialProfile>): Promise<SocialProfile | null> {
+  async updateProfile(id: string, data: Omit<Partial<SocialProfile>, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<SocialProfile | null> {
     try {
-      const updatedProfile = await this.updateById(id, data);
+      // Map the SocialProfile fields to SocialProfileDocument fields
+      const updateData: any = { ...data };
+      if ('connected' in data) {
+        updateData.isConnected = data.connected;
+        delete updateData.connected;
+      }
+      
+      const updatedProfile = await this.updateById(id, updateData);
       if (!updatedProfile) return null;
       
       return {
         id: updatedProfile._id.toString(),
         userId: updatedProfile.userId.toString(),
-        platform: updatedProfile.platform,
+        platform: updatedProfile.platform as SocialProfile['platform'],
         username: updatedProfile.username,
-        profileUrl: updatedProfile.profileUrl,
-        isConnected: updatedProfile.isConnected,
+        profileUrl: updatedProfile.profileUrl || '',
+        connected: updatedProfile.isConnected,
+        followers: 0, // Default value since it's not in the document
+        lastUpdated: updatedProfile.updatedAt.toISOString(),
         createdAt: updatedProfile.createdAt,
         updatedAt: updatedProfile.updatedAt
       };

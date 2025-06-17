@@ -71,15 +71,21 @@ export interface User {
   email: string;
   image?: string;
   profileImage?: string;
-  emailVerified?: Date | string;
-  role: 'user' | 'admin';
-  accounts: {
+  emailVerified?: Date | string | null;
+  role: 'user' | 'admin' | string;
+  accounts?: Array<{
     provider: string;
     providerAccountId: string;
     access_token?: string;
     refresh_token?: string;
     expires_at?: number;
-  }[];
+  }>;
+  provider?: string;
+  providerAccountId?: string;
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  [key: string]: any; // Allow additional properties
 }

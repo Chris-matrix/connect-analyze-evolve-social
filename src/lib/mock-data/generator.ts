@@ -10,8 +10,9 @@ const randomDate = (start: Date, end: Date): Date => {
   return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 };
 
-const randomElement = <T>(array: T[]): T => {
-  return array[Math.floor(Math.random() * array.length)];
+// Update the function to handle readonly arrays
+const randomElement = <T extends readonly unknown[]>(array: T): T[number] => {
+  return array[Math.floor(Math.random() * array.length)] as T[number];
 };
 
 const randomBoolean = (probability = 0.5): boolean => {
@@ -88,20 +89,31 @@ export const generateUser = (): User => {
   const name = `${firstName} ${lastName}`;
   const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
   
+  const userId = Math.random().toString(36).substring(2, 11);
+  const provider = randomElement(['google', 'facebook', 'twitter']);
+  const providerAccountId = Math.random().toString(36).substring(2, 15);
+  const accessToken = Math.random().toString(36).substring(2, 30);
+  const refreshToken = Math.random().toString(36).substring(2, 30);
+  
   return {
-    id: Math.random().toString(36).substring(2, 11),
+    id: userId,
     name,
     email,
-    image: `https://i.pravatar.cc/150?u=${email}`,
+    profileImage: `https://i.pravatar.cc/150?u=${email}`,
     emailVerified: randomBoolean(0.7) ? new Date().toISOString() : undefined,
     role: randomBoolean(0.1) ? 'admin' : 'user',
+    provider,
+    providerAccountId,
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
     accounts: [
       {
-        provider: randomElement(['google', 'facebook', 'twitter']),
-        providerAccountId: Math.random().toString(36).substring(2, 15),
-        access_token: Math.random().toString(36).substring(2, 30),
-        refresh_token: Math.random().toString(36).substring(2, 30),
-        expires_at: Date.now() + 3600000
+        provider,
+        providerAccountId,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_at: Math.floor(Date.now() / 1000) + 3600
       }
     ],
     createdAt: randomDate(new Date(2023, 0, 1), new Date()).toISOString(),
@@ -160,23 +172,30 @@ export const generateContentSuggestion = (): ContentSuggestion => {
 
 // Generate random social metrics for a platform
 export const generateSocialMetrics = (platform: typeof platforms[number]): SocialMetrics => {
-  // Base followers count by platform
-  const followersBase = {
+  // Base followers count by platform with default values
+  const followersBase: Record<string, number> = {
     instagram: randomInt(1000, 50000),
     twitter: randomInt(500, 30000),
     facebook: randomInt(2000, 100000),
-    linkedin: randomInt(300, 20000)
+    linkedin: randomInt(300, 20000),
+    tiktok: randomInt(2000, 100000),
+    all: randomInt(1000, 50000) // Default for 'all' platform
   };
   
-  const followers = followersBase[platform];
-  const following = platform === 'instagram' || platform === 'twitter' ? randomInt(100, 2000) : undefined;
+  // Ensure platform exists in followersBase, fallback to a default value if not
+  const safePlatform = platform in followersBase ? platform : 'all';
+  const followers = followersBase[safePlatform] || 1000; // Fallback to 1000 if all else fails
+  
+  const following = safePlatform === 'instagram' || safePlatform === 'twitter' ? randomInt(100, 2000) : undefined;
   const posts = randomInt(50, 500);
-  const likes = randomInt(followers * 0.1, followers * 0.5);
-  const comments = randomInt(likes * 0.05, likes * 0.2);
-  const shares = randomInt(likes * 0.01, likes * 0.1);
+  const likes = randomInt(Math.floor(followers * 0.1), Math.floor(followers * 0.5));
+  const comments = randomInt(Math.floor(likes * 0.05), Math.floor(likes * 0.2));
+  const shares = randomInt(Math.floor(likes * 0.01), Math.floor(likes * 0.1));
   const impressions = randomInt(followers * 2, followers * 10);
-  const reach = randomInt(followers, impressions * 0.8);
-  const engagement = parseFloat(((likes + comments + shares) / followers * 100).toFixed(2));
+  const reach = randomInt(followers, Math.floor(impressions * 0.8));
+  const engagement = followers > 0 
+    ? parseFloat(((likes + comments + shares) / followers * 100).toFixed(2))
+    : 0; // Prevent division by zero
   
   // Generate daily stats for the past 30 days
   const dailyStats = [];
@@ -204,27 +223,28 @@ export const generateSocialMetrics = (platform: typeof platforms[number]): Socia
     });
   }
   
+  const metrics = {
+    followers: randomInt(1000, 1000000),
+    following: randomInt(100, 5000),
+    posts: randomInt(10, 5000),
+    likes: randomInt(1000, 50000),
+    comments: randomInt(10, 5000),
+    shares: randomInt(10, 1000),
+    impressions: randomInt(5000, 1000000),
+    reach: randomInt(1000, 500000),
+    engagement: randomInt(100, 10000),
+    engagementRate: Math.random() * 10,
+  };
+
   return {
     id: Math.random().toString(36).substring(2, 11),
     userId: Math.random().toString(36).substring(2, 11),
     platform,
-    metrics: {
-      followers,
-      following,
-      posts,
-      likes,
-      comments,
-      shares,
-      impressions,
-      reach,
-      engagement
-    },
-    dailyStats,
-    platformAccountId: Math.random().toString(36).substring(2, 15),
-    platformUsername: `user_${platform}_${Math.random().toString(36).substring(2, 7)}`,
-    lastUpdated: new Date().toISOString(),
-    createdAt: randomDate(new Date(2022, 0, 1), new Date(2023, 0, 1)).toISOString(),
-    updatedAt: new Date().toISOString()
+    followers: metrics.followers, // Ensure required field is at the root level
+    ...metrics, // Spread the metrics object to include all metrics at the root
+    date: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 };
 

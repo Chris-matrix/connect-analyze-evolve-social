@@ -44,7 +44,7 @@ export const getSocialProfiles = async (): Promise<SocialProfile[]> => {
 };
 
 // Add a new social profile
-export const addSocialProfile = async (profile: Omit<SocialProfile, 'id' | 'createdAt' | 'updatedAt'>): Promise<SocialProfile> => {
+export const addSocialProfile = async (profile: Omit<SocialProfile, 'id' | 'createdAt' | 'updatedAt' | 'isConnected'>): Promise<SocialProfile> => {
   try {
     // Try to add via API first
     try {
@@ -63,7 +63,7 @@ export const addSocialProfile = async (profile: Omit<SocialProfile, 'id' | 'crea
 };
 
 // Update an existing social profile
-export const updateSocialProfile = async (id: string, data: Partial<SocialProfile>): Promise<SocialProfile> => {
+export const updateSocialProfile = async (id: string, data: Omit<Partial<SocialProfile>, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<SocialProfile> => {
   try {
     // Try to update via API first
     try {
