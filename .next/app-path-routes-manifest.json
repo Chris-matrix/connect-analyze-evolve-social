@@ -1,0 +1,23 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
+  "/api/content-suggestions/route": "/api/content-suggestions",
+  "/api/auth/register/route": "/api/auth/register",
+  "/api/content/suggestions/route": "/api/content/suggestions",
+  "/api/metrics/route": "/api/metrics",
+  "/api/profiles/route": "/api/profiles",
+  "/page": "/",
+  "/help/page": "/help",
+  "/(auth)/register/page": "/register",
+  "/(auth)/login/page": "/login",
+  "/(auth)/reset-password/page": "/reset-password",
+  "/(dashboard)/page": "/",
+  "/(dashboard)/audience/page": "/audience",
+  "/(dashboard)/calendar/page": "/calendar",
+  "/(dashboard)/content-suggestions/page": "/content-suggestions",
+  "/(dashboard)/engagement/page": "/engagement",
+  "/(dashboard)/profiles/page": "/profiles",
+  "/(dashboard)/analytics/page": "/analytics",
+  "/(dashboard)/profile/page": "/profile",
+  "/(dashboard)/settings/page": "/settings"
+}

@@ -2,7 +2,7 @@
 export interface SocialProfile {
   id: string;
   userId: string;
-  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'tiktok';
+  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'tiktok' | 'youtube';
   username: string;
   profileUrl: string;
   connected: boolean;

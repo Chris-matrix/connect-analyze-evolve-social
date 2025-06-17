@@ -3,7 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StarIcon, Users, MessageSquare, Compass, Star, CircleDot, CircleArrowUp, CircleArrowDown } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { SocialMetrics } from '@/types/content';
+import { PlatformType } from '@/models/SocialMetrics';
+
+interface SocialMetrics {
+  platform: PlatformType;
+  metrics: {
+    engagement: number;
+    followers: number;
+    // Add other metrics as needed
+  };
+}
 
 interface InterestNode {
   id: string;
@@ -32,42 +41,42 @@ const InterestGalaxy: React.FC<InterestGalaxyProps> = ({ platforms }) => {
   const [rotation, setRotation] = useState(0);
   
   // Generate interests based on platform data if available
-  const interests = platforms ? [
-    { 
-      id: '1', 
-      name: 'Instagram', 
-      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'instagram')?.metrics.engagement || 60)), 
-      members: platforms.find(p => p.platform === 'instagram')?.metrics.followers || 10000, 
-      icon: <CircleDot className="h-5 w-5" /> 
-    },
-    { 
-      id: '2', 
-      name: 'Twitter', 
-      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'twitter')?.metrics.engagement || 55)), 
-      members: platforms.find(p => p.platform === 'twitter')?.metrics.followers || 8000, 
-      icon: <Star className="h-5 w-5" /> 
-    },
-    { 
-      id: '3', 
-      name: 'Facebook', 
-      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'facebook')?.metrics.engagement || 65)), 
-      members: platforms.find(p => p.platform === 'facebook')?.metrics.followers || 9000, 
-      icon: <CircleArrowUp className="h-5 w-5" /> 
-    },
-    { 
-      id: '4', 
-      name: 'LinkedIn', 
-      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'linkedin')?.metrics.engagement || 50)), 
-      members: platforms.find(p => p.platform === 'linkedin')?.metrics.followers || 6000, 
-      icon: <Users className="h-5 w-5" /> 
-    },
-    { 
-      id: '5', 
-      name: 'YouTube', 
-      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'youtube')?.metrics.engagement || 45)), 
-      members: platforms.find(p => p.platform === 'youtube')?.metrics.followers || 7000, 
-      icon: <MessageSquare className="h-5 w-5" /> 
-    },
+  const interests = platforms && platforms.length > 0 ? [
+    ...(platforms.some(p => p.platform === 'instagram') ? [{
+      id: '1',
+      name: 'Instagram',
+      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'instagram')?.metrics.engagement || 60)),
+      members: platforms.find(p => p.platform === 'instagram')?.metrics.followers || 8500,
+      icon: <Compass className="h-5 w-5" />
+    }] : []),
+    ...(platforms.some(p => p.platform === 'twitter') ? [{
+      id: '2',
+      name: 'Twitter',
+      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'twitter')?.metrics.engagement || 55)),
+      members: platforms.find(p => p.platform === 'twitter')?.metrics.followers || 7200,
+      icon: <MessageSquare className="h-5 w-5" />
+    }] : []),
+    ...(platforms.some(p => p.platform === 'facebook') ? [{
+      id: '3',
+      name: 'Facebook',
+      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'facebook')?.metrics.engagement || 50)),
+      members: platforms.find(p => p.platform === 'facebook')?.metrics.followers || 6500,
+      icon: <Users className="h-5 w-5" />
+    }] : []),
+    ...(platforms.some(p => p.platform === 'linkedin') ? [{
+      id: '4',
+      name: 'LinkedIn',
+      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'linkedin')?.metrics.engagement || 50)),
+      members: platforms.find(p => p.platform === 'linkedin')?.metrics.followers || 6000,
+      icon: <Users className="h-5 w-5" />
+    }] : []),
+    ...(platforms.some(p => p.platform === 'youtube') ? [{
+      id: '5',
+      name: 'YouTube',
+      size: Math.min(90, Math.max(40, platforms.find(p => p.platform === 'youtube')?.metrics.engagement || 45)),
+      members: platforms.find(p => p.platform === 'youtube')?.metrics.followers || 7000,
+      icon: <MessageSquare className="h-5 w-5" />
+    }] : []),
   ] : defaultInterests;
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import * as mockDataGenerator from './generator';
 import { ContentSuggestion, SocialMetrics, User } from '@/types/content';
+import { safeLocalStorage, isBrowser } from '../utils/browser';
 
 // Define SocialProfile interface
 export interface SocialProfile {
@@ -47,7 +48,7 @@ export const initializeMockData = () => {
     
     // Initialize social profiles from localStorage or with default data
     try {
-      const storedProfiles = localStorage.getItem('socialProfiles');
+      const storedProfiles = safeLocalStorage.getItem('socialProfiles');
       if (storedProfiles) {
         mockDataCache.socialProfiles = JSON.parse(storedProfiles);
       } else {
@@ -71,7 +72,7 @@ export const initializeMockData = () => {
             lastUpdated: new Date().toISOString()
           }
         ];
-        localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+        safeLocalStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
       }
     } catch (error) {
       console.error('Error initializing social profiles:', error);
@@ -320,7 +321,7 @@ export const addSocialProfile = async (profile: Omit<SocialProfile, 'id'>) => {
   
   // Persist to localStorage
   try {
-    localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+    safeLocalStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
   } catch (error) {
     console.error('Error saving social profiles to localStorage:', error);
   }
@@ -349,7 +350,7 @@ export const updateSocialProfile = async (id: string, data: Partial<SocialProfil
   
   // Persist to localStorage
   try {
-    localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+    safeLocalStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
   } catch (error) {
     console.error('Error saving social profiles to localStorage:', error);
   }
@@ -372,7 +373,7 @@ export const deleteSocialProfile = async (id: string) => {
   
   // Persist to localStorage
   try {
-    localStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
+    safeLocalStorage.setItem('socialProfiles', JSON.stringify(mockDataCache.socialProfiles));
   } catch (error) {
     console.error('Error saving social profiles to localStorage:', error);
   }

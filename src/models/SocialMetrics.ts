@@ -1,8 +1,10 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type PlatformType = 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'youtube' | 'tiktok';
+
 export interface ISocialMetrics extends Document {
   userId: mongoose.Types.ObjectId;
-  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+  platform: PlatformType;
   metrics: {
     followers: number;
     following?: number;

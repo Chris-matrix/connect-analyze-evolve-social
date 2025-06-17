@@ -25,10 +25,9 @@ interface GlobalCache {
   mongoose?: MongooseCache;
 }
 
-// In Vite, environment variables are exposed on import.meta.env instead of process.env
-// and must be prefixed with VITE_ to be exposed to the client
-const MONGODB_URI = import.meta.env.VITE_MONGODB_URI || 'mongodb://localhost:27017/?appName=MongoDB+Compass&directConnection=true&serverSelectionTimeoutMS=2000';
-const DB_NAME = import.meta.env.VITE_DB_NAME || 'social-dashboard';
+// In Next.js, environment variables are exposed on process.env
+const MONGODB_URI = process.env.DATABASE_URL || 'mongodb://localhost:27017/connect-analyze-evolve-social';
+const DB_NAME = process.env.DB_NAME || 'connect-analyze-evolve-social';
 
 // MongoDB connection configuration
 const config: MongoDBConfig = {
