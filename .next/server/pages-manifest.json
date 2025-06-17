@@ -1,1 +1,19 @@
-{}
+{
+  "/_app": "pages/_app.js",
+  "/Analytics": "pages/Analytics.js",
+  "/Index": "pages/Index.js",
+  "/_error": "pages/_error.js",
+  "/Audience": "pages/Audience.js",
+  "/ContentCalendar": "pages/ContentCalendar.js",
+  "/ContentSuggestions": "pages/ContentSuggestions.js",
+  "/Engagement": "pages/Engagement.js",
+  "/NotFound": "pages/NotFound.js",
+  "/Register": "pages/Register.js",
+  "/Profile": "pages/Profile.js",
+  "/LoadingPage": "pages/LoadingPage.js",
+  "/Settings": "pages/Settings.js",
+  "/ResetPassword": "pages/ResetPassword.js",
+  "/Login": "pages/Login.js",
+  "/SocialProfiles": "pages/SocialProfiles.js",
+  "/_document": "pages/_document.js"
+}

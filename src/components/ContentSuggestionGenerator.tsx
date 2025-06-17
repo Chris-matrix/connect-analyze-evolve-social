@@ -26,7 +26,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const ContentSuggestionGenerator: React.FC = () => {
+interface ContentSuggestionGeneratorProps {
+  onSuggestionGenerated?: (suggestion: ContentSuggestion) => void;
+}
+
+export const ContentSuggestionGenerator: React.FC<ContentSuggestionGeneratorProps> = ({ 
+  onSuggestionGenerated 
+}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<ContentSuggestion | null>(null);
@@ -65,8 +71,14 @@ const ContentSuggestionGenerator: React.FC = () => {
         includeHashtags: data.includeHashtags
       };
       
-      const result = await mockApi.generateAiContentSuggestion(params);
-      setSuggestion(result);
+      const newSuggestion = await mockApi.generateAiContentSuggestion(params);
+      setSuggestion(newSuggestion);
+      setError(null);
+      
+      // Call the callback if provided
+      if (onSuggestionGenerated) {
+        onSuggestionGenerated(newSuggestion);
+      }
     } catch (error: unknown) {
       console.error('Error in content generation:', error);
       setError(
@@ -279,4 +291,4 @@ const ContentSuggestionGenerator: React.FC = () => {
   );
 };
 
-export default ContentSuggestionGenerator;
+
