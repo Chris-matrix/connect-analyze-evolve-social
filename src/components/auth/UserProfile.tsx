@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import * as mockApi from '@/lib/mock-data/mock-api';
+import { User } from '@/types/content';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +33,53 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const UserProfile: React.FC = () => {
-  const { user, updateProfile, error, loading } = useAuth();
+  const { user: authUser, updateProfile, error, loading } = useAuth();
+  const [user, setUser] = useState<User | null>(authUser);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
+  const [socialProfiles, setSocialProfiles] = useState<Array<{
+    platform: string;
+    username: string;
+    followers: number;
+  }>>([]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!authUser) return;
+      
+      try {
+        // Get social profiles for the user
+        const profiles = await mockApi.getSocialProfiles();
+        
+        // Calculate total followers across all platforms
+        const totalFollowers = profiles?.reduce(
+          (sum, profile) => sum + (profile?.followers || 0), 0
+        ) || 0;
+        
+        setFollowers(totalFollowers);
+        setFollowing(Math.floor(Math.random() * 500) + 50); // Random following count for demo
+        
+        setSocialProfiles(profiles?.map(profile => ({
+          platform: profile.platform,
+          username: profile.username,
+          followers: profile.followers || 0
+        })) || []);
+        
+        // Update user state with any missing data
+        setUser({
+          ...authUser
+        });
+        setFollowers(totalFollowers);
+        setFollowing(Math.floor(Math.random() * 500) + 50);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        // Fall back to auth user data if there's an error
+        setUser(authUser);
+      }
+    };
+    
+    fetchUserData();
+  }, [authUser]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   const {
@@ -89,6 +137,16 @@ const UserProfile: React.FC = () => {
   };
 
   const connectedAccounts = user?.accounts || [];
+  
+  // Ensure we have safe default values
+  const safeUser = user || {
+    id: '',
+    name: 'User',
+    email: '',
+    role: 'user',
+    profileImage: '',
+    image: ''
+  } as User;
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -112,11 +170,27 @@ const UserProfile: React.FC = () => {
             <CardContent>
               <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
-                    <AvatarFallback>{user?.name ? getInitials(user.name) : 'U'}</AvatarFallback>
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={safeUser.profileImage || safeUser.image} alt={safeUser.name} />
+                    <AvatarFallback>
+                      {safeUser.name
+                        ?.split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </AvatarFallback>
                   </Avatar>
-                  <Button variant="outline">Change Avatar</Button>
+                  <div>
+                    <h2 className="text-2xl font-bold">{safeUser.name}</h2>
+                    <p className="text-muted-foreground">{safeUser.email}</p>
+                    <div className="flex space-x-4 mt-2">
+                      <span className="text-sm text-muted-foreground">
+                        <span className="font-semibold">{followers.toLocaleString()}</span> Followers
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        <span className="font-semibold">{following.toLocaleString()}</span> Following
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="space-y-4">

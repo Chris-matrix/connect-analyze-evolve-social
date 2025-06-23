@@ -16,11 +16,31 @@ const Engagement = () => {
   useEffect(() => {
     const fetchEngagementData = async () => {
       try {
+        console.log('Fetching engagement data...');
         const data = await mockApi.getEngagementData();
-        setEngagementData(data);
+        console.log('Engagement data received:', data);
+        
+        if (!data) {
+          throw new Error('No data returned from API');
+        }
+        
+        // Ensure all required fields are present with default values
+        const safeData = {
+          totalEngagements: data.totalEngagements || 0,
+          totalComments: data.totalComments || 0,
+          responseRate: data.responseRate || 0,
+          avgResponseTime: data.avgResponseTime || 0,
+          sentimentScore: data.sentimentScore || 0,
+          recentComments: data.recentComments || [],
+          engagementTrends: data.engagementTrends || [],
+          platformEngagement: data.platformEngagement || []
+        };
+        
+        console.log('Setting engagement data:', safeData);
+        setEngagementData(safeData);
       } catch (error) {
         console.error('Error fetching engagement data:', error);
-        setError('Failed to load engagement data');
+        setError('Failed to load engagement data. ' + (error as Error).message);
       } finally {
         setLoading(false);
       }

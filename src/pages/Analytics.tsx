@@ -26,12 +26,27 @@ const Analytics = () => {
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
+        console.log('Fetching analytics data...');
         const data = await mockApi.getAnalyticsData();
-        setAnalyticsData(data);
-        setFilteredData(data); // Initialize filtered data with all data
+        console.log('Analytics data received:', data);
+        
+        if (!data) {
+          throw new Error('No data returned from API');
+        }
+        
+        // Ensure all required fields are present
+        const safeData = {
+          platformPerformance: data.platformPerformance || [],
+          engagementData: data.engagementData || [],
+          audienceGrowth: data.audienceGrowth || [],
+        };
+        
+        console.log('Setting analytics data:', safeData);
+        setAnalyticsData(safeData);
+        setFilteredData(safeData);
       } catch (error) {
         console.error('Error fetching analytics data:', error);
-        setError('Failed to load analytics data');
+        setError('Failed to load analytics data. ' + (error as Error).message);
       } finally {
         setLoading(false);
       }
@@ -42,62 +57,108 @@ const Analytics = () => {
   
   // Apply filters when filter values change
   useEffect(() => {
-    if (!analyticsData) return;
-    
-    const filtered = { ...analyticsData };
-    
-    // Filter by platform
-    if (selectedPlatform !== "all") {
-      // Filter platform performance data
-      filtered.platformPerformance = analyticsData.platformPerformance.filter(item => 
-        item.platform.toLowerCase() === selectedPlatform.toLowerCase()
-      );
-      
-      // Filter engagement data by platform
-      filtered.engagementData = analyticsData.engagementData.filter(item => 
-        // Only keep data points that have engagement for the selected platform
-        item[selectedPlatform as keyof typeof item] !== undefined
-      );
-      
-      // Filter audience growth data - maintain the structure but zero out non-selected platforms
-      filtered.audienceGrowth = analyticsData.audienceGrowth.map(item => {
-        // Create a new object with all platforms set to 0 except the selected one
-        return {
-          month: item.month,
-          instagram: selectedPlatform === 'instagram' ? item.instagram : 0,
-          twitter: selectedPlatform === 'twitter' ? item.twitter : 0,
-          facebook: selectedPlatform === 'facebook' ? item.facebook : 0,
-          linkedin: selectedPlatform === 'linkedin' ? item.linkedin : 0
-        };
-      });
+    if (!analyticsData) {
+      console.warn('No analytics data available to filter');
+      return;
     }
     
-    // Filter by date range
-    if (dateRange.from && dateRange.to) {
-      const fromDate = dateRange.from;
-      const toDate = dateRange.to;
+    try {
+      console.log('Applying filters with data:', analyticsData);
+      const filtered = { 
+        platformPerformance: [...(analyticsData.platformPerformance || [])],
+        engagementData: [...(analyticsData.engagementData || [])],
+        audienceGrowth: [...(analyticsData.audienceGrowth || [])]
+      };
       
-      // Filter engagement data by date
-      filtered.engagementData = filtered.engagementData.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= fromDate && itemDate <= toDate;
-      });
-      
-      // Filter audience growth data by month
-      // This is an approximation since audienceGrowth uses month strings
-      filtered.audienceGrowth = filtered.audienceGrowth.filter(item => {
-        // Parse month string like "Jan 2023"
-        const [monthStr, yearStr] = item.month.split(' ');
-        const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(monthStr);
-        if (monthIndex === -1) return true; // Keep if we can't parse
+      // Filter by platform
+      if (selectedPlatform !== "all") {
+        console.log(`Filtering by platform: ${selectedPlatform}`);
         
-        const itemDate = new Date(parseInt(yearStr), monthIndex);
-        return itemDate >= new Date(fromDate.getFullYear(), fromDate.getMonth()) && 
-               itemDate <= new Date(toDate.getFullYear(), toDate.getMonth());
-      });
+        // Filter platform performance data
+        if (filtered.platformPerformance) {
+          filtered.platformPerformance = filtered.platformPerformance.filter(item => 
+            item && item.platform && item.platform.toLowerCase() === selectedPlatform.toLowerCase()
+          );
+        }
+        
+        // Filter engagement data by platform
+        if (filtered.engagementData) {
+          filtered.engagementData = filtered.engagementData.filter(item => {
+            if (!item) return false;
+            // Only keep data points that have engagement for the selected platform
+            return item[selectedPlatform as keyof typeof item] !== undefined;
+          });
+        }
+        
+        // Filter audience growth data - maintain the structure but zero out non-selected platforms
+        if (filtered.audienceGrowth) {
+          filtered.audienceGrowth = filtered.audienceGrowth.map(item => {
+            if (!item) return { month: '', instagram: 0, twitter: 0, facebook: 0, linkedin: 0 };
+            
+            // Create a new object with all platforms set to 0 except the selected one
+            return {
+              month: item.month || '',
+              instagram: selectedPlatform === 'instagram' ? (item.instagram || 0) : 0,
+              twitter: selectedPlatform === 'twitter' ? (item.twitter || 0) : 0,
+              facebook: selectedPlatform === 'facebook' ? (item.facebook || 0) : 0,
+              linkedin: selectedPlatform === 'linkedin' ? (item.linkedin || 0) : 0
+            };
+          });
+        }
+      }
+      
+      // Filter by date range
+      if (dateRange.from && dateRange.to) {
+        console.log(`Filtering by date range: ${dateRange.from} to ${dateRange.to}`);
+        const fromDate = dateRange.from;
+        const toDate = dateRange.to;
+        
+        // Filter engagement data by date
+        if (filtered.engagementData) {
+          filtered.engagementData = filtered.engagementData.filter(item => {
+            if (!item || !item.date) return false;
+            try {
+              const itemDate = new Date(item.date);
+              return itemDate >= fromDate && itemDate <= toDate;
+            } catch (e) {
+              console.warn('Invalid date in engagement data:', item.date);
+              return false;
+            }
+          });
+        }
+        
+        // Filter audience growth data by month
+        if (filtered.audienceGrowth) {
+          filtered.audienceGrowth = filtered.audienceGrowth.filter(item => {
+            if (!item || !item.month) return false;
+            
+            try {
+              // Parse month string like "Jan 2023"
+              const [monthStr, yearStr] = item.month.split(' ');
+              const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(monthStr);
+              if (monthIndex === -1) {
+                console.warn(`Could not parse month: ${item.month}`);
+                return true; // Keep if we can't parse
+              }
+              
+              const itemDate = new Date(parseInt(yearStr), monthIndex);
+              return itemDate >= new Date(fromDate.getFullYear(), fromDate.getMonth()) && 
+                    itemDate <= new Date(toDate.getFullYear(), toDate.getMonth());
+            } catch (e) {
+              console.warn('Error parsing date in audience growth data:', item.month, e);
+              return false;
+            }
+          });
+        }
+      }
+      
+      console.log('Filtered data:', filtered);
+      setFilteredData(filtered);
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      // Fall back to unfiltered data
+      setFilteredData(analyticsData);
     }
-    
-    setFilteredData(filtered);
   }, [analyticsData, selectedPlatform, dateRange]);
   
   // Reset filters

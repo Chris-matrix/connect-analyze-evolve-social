@@ -11,6 +11,16 @@
       "static/chunks/9341.a5e04b1003bfe050.js"
     ]
   },
+  "components\\ContentSuggestions.client.tsx -> ./ContentSuggestionGenerator": {
+    "id": 7162,
+    "files": [
+      "static/chunks/2320-2ce1bd3053b21933.js",
+      "static/chunks/2392-a2a20d366a57a609.js",
+      "static/chunks/6205-a67068272c2c341d.js",
+      "static/chunks/4240.4175a55a7453297b.js",
+      "static/chunks/7162.6d70bcc34bd66dd1.js"
+    ]
+  },
   "components\\settings\\DataStorageSettings.tsx -> @/lib/db/mongodb": {
     "id": 1617,
     "files": []
@@ -37,6 +47,13 @@
     "id": 93539,
     "files": [
       "static/chunks/3539.43216faae4b188d0.js"
+    ]
+  },
+  "pages\\ContentSuggestions.tsx -> @/components/ContentSuggestions.client": {
+    "id": 5864,
+    "files": [
+      "static/chunks/7805-79e5ea5337c4924d.js",
+      "static/chunks/5864.bb2684b7a698ac4b.js"
     ]
   }
 }
