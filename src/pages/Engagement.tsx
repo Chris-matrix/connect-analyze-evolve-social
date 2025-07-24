@@ -1,21 +1,50 @@
 
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 import { MessageSquare, Loader2, ThumbsUp, Share2, Heart, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import * as mockApi from '@/lib/mock-data/mock-api';
 import { EngagementData, CommentData } from '@/types/dashboard';
+
+// Dynamically import charts to avoid SSR issues
+const EngagementCharts = dynamic(
+  () => import('@/components/engagement/EngagementCharts'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+);
+
+// Dynamically import mockApi to avoid SSR issues
+let mockApi: any;
+if (typeof window !== 'undefined') {
+  mockApi = require('@/lib/mock-data/mock-api');
+}
 
 const Engagement = () => {
   const [loading, setLoading] = useState(true);
   const [engagementData, setEngagementData] = useState<EngagementData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
     const fetchEngagementData = async () => {
+      if (!mockApi) return;
+      
       try {
+        setLoading(true);
         console.log('Fetching engagement data...');
         const data = await mockApi.getEngagementData();
         console.log('Engagement data received:', data);
@@ -48,6 +77,15 @@ const Engagement = () => {
 
     fetchEngagementData();
   }, []);
+  
+  // Don't render anything during server-side rendering
+  if (!isMounted) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -144,23 +182,7 @@ const Engagement = () => {
             <CardDescription>30-day engagement metrics across platforms</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={engagementTrends}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="likes" stroke="#8884d8" activeDot={{ r: 8 }} />
-                  <Line type="monotone" dataKey="comments" stroke="#82ca9d" />
-                  <Line type="monotone" dataKey="shares" stroke="#ffc658" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <EngagementCharts engagementData={engagementData} />
           </CardContent>
         </Card>
 

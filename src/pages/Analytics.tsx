@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, Loader2, Filter, Instagram, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as mockApi from '@/lib/mock-data/mock-api';
 import { AnalyticsData } from '@/types/dashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -211,7 +211,30 @@ const Analytics = () => {
   }
 
   // Get data from filteredData if available, otherwise use analyticsData
-  const { platformPerformance = [], engagementData = [], audienceGrowth = [] } = filteredData || analyticsData || {};
+  const data = filteredData || analyticsData;
+  
+  // Ensure all required arrays exist with default empty arrays
+  const platformPerformance = data?.platformPerformance || [];
+  const engagementData = data?.engagementData || [];
+  const audienceGrowth = data?.audienceGrowth || [];
+  
+  // Check if we have any data to display
+  const hasData = platformPerformance.length > 0 || engagementData.length > 0 || audienceGrowth.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold mb-2">No Analytics Data Available</h2>
+        <p className="text-muted-foreground text-center max-w-md">
+          We couldn't find any analytics data. This might be because you haven't connected any social media accounts yet or there was an issue loading the data.
+        </p>
+        <Button className="mt-4" onClick={() => window.location.reload()}>
+          Refresh Data
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-6">

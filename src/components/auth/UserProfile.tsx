@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import * as mockApi from '@/lib/mock-data/mock-api';
 import { User } from '@/types/content';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,23 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter, Loader2 } from 'lucide-react';
+
+// Mock data for social profiles
+const mockSocialProfiles = [
+  {
+    id: '1',
+    platform: 'instagram',
+    username: 'socialconnect',
+    followers: 1250
+  },
+  {
+    id: '2',
+    platform: 'twitter',
+    username: 'socialconnect',
+    followers: 850
+  }
+];
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,49 +48,76 @@ const passwordSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
+// Define social profile type
+interface SocialProfile {
+  id: string;
+  platform: string;
+  username: string;
+  followers: number;
+}
+
 const UserProfile: React.FC = () => {
   const { user: authUser, updateProfile, error, loading } = useAuth();
   const [user, setUser] = useState<User | null>(authUser);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
-  const [socialProfiles, setSocialProfiles] = useState<Array<{
-    platform: string;
-    username: string;
-    followers: number;
-  }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [socialProfiles, setSocialProfiles] = useState<SocialProfile[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!authUser) return;
+      if (!authUser) {
+        setIsLoading(false);
+        return;
+      }
       
       try {
-        // Get social profiles for the user
-        const profiles = await mockApi.getSocialProfiles();
+        // Use mock data directly instead of API call during SSR/SSG
+        let profiles: SocialProfile[] = [];
+        
+        // Only try to import and use the API on the client side
+        if (typeof window !== 'undefined') {
+          try {
+            const mockApi = await import('@/lib/mock-data/mock-api');
+            const apiProfiles = await mockApi.getSocialProfiles();
+            if (Array.isArray(apiProfiles)) {
+              profiles = apiProfiles.map(p => ({
+                id: p.id || Math.random().toString(36).substr(2, 9),
+                platform: p.platform || 'unknown',
+                username: p.username || '',
+                followers: typeof p.followers === 'number' ? p.followers : 0
+              }));
+            }
+          } catch (error) {
+            console.error('Error fetching social profiles:', error);
+            // Fall back to mock data if API fails
+            profiles = [...mockSocialProfiles];
+          }
+        } else {
+          // Use mock data during SSR/SSG
+          profiles = [...mockSocialProfiles];
+        }
         
         // Calculate total followers across all platforms
-        const totalFollowers = profiles?.reduce(
+        const totalFollowers = profiles.reduce(
           (sum, profile) => sum + (profile?.followers || 0), 0
-        ) || 0;
+        );
         
         setFollowers(totalFollowers);
-        setFollowing(Math.floor(Math.random() * 500) + 50); // Random following count for demo
-        
-        setSocialProfiles(profiles?.map(profile => ({
-          platform: profile.platform,
-          username: profile.username,
-          followers: profile.followers || 0
-        })) || []);
+        setFollowing(Math.floor(Math.random() * 500) + 50);
+        setSocialProfiles(profiles);
         
         // Update user state with any missing data
         setUser({
           ...authUser
         });
-        setFollowers(totalFollowers);
-        setFollowing(Math.floor(Math.random() * 500) + 50);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error in fetchUserData:', error);
         // Fall back to auth user data if there's an error
         setUser(authUser);
+        setSocialProfiles([...mockSocialProfiles]);
+      } finally {
+        setIsLoading(false);
       }
     };
     
